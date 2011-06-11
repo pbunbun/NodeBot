@@ -1,0 +1,39 @@
+Simple IRC bot I wrote to learn node.js
+Only really been tested on Quakenet, and has pretty much no error-checking.
+
+To get it up and running edit the config at the top of Bot.js.
+That is, anything before the pubAPI declaration.
+Then run `node Bot.js`.
+
+Commands included:
+	!amipriv: Returns "Yes" if a user has identified with the password, "No" otherwise.
+	!join: Joins a channel given as argument (privileged).
+	!part: Leaves a channel given as argument (privileged).
+	!quote: Returns a quote from a quotes file.
+
+And for testing:
+	!crash: Crashes when called (privileged).
+	!crashInit: Crashes when loading (privileged).
+	!testNoCall: Has no onCall() defined (privileged).
+
+Designed to make it easy to add a command:
+Create a file command.js (where command is the command you want) and define the following:
+	exports.timeLimit: The amount of milliseconds you want to enforce between uses.
+	exports.needPriv:  True if only identified users can use, false if not.
+	exports.lastCall:  An empty dictionary (used for flood control).
+	exports.onCall(msg, api): Function to be called when command is invoked.
+	exports.onInit(): Function to be called when bot starts (optional).
+
+msg is a struct containing:
+	type: "PM" or "CHANMSG".
+	from: User invoking the command.
+	target: Who the user has sent the command to (either a channel the bot is in or the bot's nick).
+	message: Any text that comes after the command invokation (arguments?).
+	mask: Hostmask of the user sending the message.
+	priv: Whether the user has identified.
+
+api is a list of functions declared in Bot.js that the command can access.
+It will be privAPI if the user has identified, pubAPI otherwise.
+If the command has needPriv as True then it will only ever be called when an identified user invokes it, with privAPI.
+If the command has needPriv as False then it can have either pubAPI or privAPI, and msg.priv should indicate which.
+This can be used to provide extra functionality to identified users (e.g. the handling of "-reload" in quote.js).
